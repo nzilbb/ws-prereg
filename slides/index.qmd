@@ -1,0 +1,309 @@
+---
+title: "Foundations"
+subtitle: "Session 8: Preregistration and Reporting"
+date: 2025-07-31
+# For author options see : 
+# https://quarto.org/docs/authoring/front-matter.html#authors-and-affiliations
+# NB: multiple authors can be added here.
+author:
+  - name:
+      given: Joshua
+      family: Wilson Black
+    email: joshua.black@canterbury.ac.nz
+    orcid: 0000-0002-8272-5763
+    affiliation: 
+      - "Te Kāhui Roro Reo | New Zealand Institute of Language, Brain and Behaviour"
+      - "Te Whare Wānanga o Waitaha | University of Canterbury"
+format:
+  revealjs:
+    theme: [custom.scss]
+    incremental: true
+    logo: images/NZILBB-small.svg
+    df-print: paged
+    template-partials:
+      - title-slide.html
+    title-slide-attributes:
+      # If you have Marsden funding, change image name to `nzilbb-uc-marsden.svg`
+      data-background-image: images/nzilbb-uc.svg
+      # First number controls the horizontal position, second controls vertical.
+      data-background-position: '50% 5%'
+      # Controls size of image relative to width of the slide.
+      data-background-size: 50%
+    embed-resources: false
+    include-in-header:
+      - text: |
+          <link rel="icon" type="image/png" sizes="32x32" href=".//images/fav.png" />
+bibliography: 
+  - grateful-refs.bib
+  - stat_workshops.bib
+editor: 
+  markdown: 
+    wrap: 72
+execute: 
+  echo: true
+knitr:
+  opts_chunk: 
+    dev: "png"
+    dev.args: 
+      bg: "transparent"
+---
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(broom.mixed)
+library(glue)
+library(here)
+library(lme4)
+library(lmerTest)
+library(modelbased)
+library(patchwork)
+
+big_dia <- read_csv(here('data', 'big_dia.csv'))
+
+big_dia <- big_dia |> 
+  mutate(
+    final = factor(final),
+    initial = factor(initial),
+    repeated.20 = factor(repeated.20)
+  )
+
+theme_set(theme_minimal())
+```
+
+## Last Time
+
+- A complex real world example
+    - A Big LMM from [@soskuthyChangingWordUsage2017]
+- Some lessons along with way:
+    - Extracting random effects
+    - More plotting hints
+
+## This Time
+
+- Preregister
+- Implement
+- Report
+
+# Preregistration
+
+## False positives
+
+- A p-value of 0.05 means we'll wrongly reject the null in roughly 20% of cases.
+- i.e., we accept some [false positives]{.red} ('type I errors').
+- This is a disaster if we can decide our hypothesis _on the basis of the data_.
+- Once there are 20 pairs of variables (around 7 variables), there's probably a 
+'statistically significant' relationship
+
+## p-Hacking
+
+::: r-stack
+
+:::: fragment
+
+```{r}
+#| echo: false
+library(ggcorrplot)
+
+N = 50
+
+set.seed(20)
+
+nothing_to_see_here <- tibble(
+  dogness = rnorm(N),
+  bearness = rnorm(N),
+  lionness = rnorm(N),
+  griffinness = rnorm(N),
+  dragonness = rnorm(N),
+  catness = rnorm(N, 10, 10),
+  horseness = rnorm(N, -2, 1),
+  unicornness = rcauchy(N),
+  picnics_stolen = rbinom(N, 200, 0.2),
+  number_steps = rpois(N, 20),
+  coat_style = sample(
+    1:3, 
+    size=N, 
+    replace=TRUE,
+    prob = c(4, 2, 3)
+  ),
+  timidity = runif(N, 0, 1),
+  kindness = runif(N, 0, 1),
+  dreaminess = runif(N, 0, 1),
+  anger = runif(N, 0, 1),
+  enneagram = sample(
+    1:9, 
+    size=N, 
+    replace=TRUE,
+    prob = c(
+      0.1, 0.4, 0.1,
+      0.5, 0.2, 0.3,
+      0.2, 0.4, 0.3)
+  ),
+  reads_herald = rbinom(N, 1, 0.5),
+  reads_stuff = rbinom(N, 1, 0.7),
+  scaled_height = rnorm(N)
+)
+
+cor_matrix <- cor(nothing_to_see_here)
+p_matrix <- cor_pmat(nothing_to_see_here)
+
+ggcorrplot(
+  cor_matrix,
+  hc.order = TRUE,
+  type = "lower",
+  p.mat = p_matrix
+)
+```
+
+::::
+
+:::: fragment
+
+![](images/bear-kind.png)
+
+::::
+
+:::: fragment
+
+![](images/anger-griffin.png)
+
+::::
+
+:::: fragment
+
+![](images/enneagram-dragon.png)
+
+::::
+
+:::
+
+## Preregistration {.smaller}
+
+ - A 'sealed envelope': state hypothesis and proposed analysis _before_ you have
+ data.
+ - Two main services:
+    - [AsPredicted](https://aspredicted.org)
+    - [OSF.io](https://osf.io)
+- Difference: 
+    - AsPredicted just wants details required to avoid p-hacking etc.
+    - OSF.io allows more detail to evaluate research quality (incl. power analyses.)
+    
+::: footer
+For advice on AsPredicted pre-registrations go [here](https://datacolada.org/64)
+:::
+ 
+## A toy hypothesis
+
+- We've seen some well-known effects of usage factors on word duration in
+[@soskuthyChangingWordUsage2017]. 
+- Their main point is about *change* in usage factors over time.
+- This relies on the time depth of ONZE.
+- In a 'shallower' corpus, we can test the well known effects.
+- We'll use the QuakeBox transcript from the LaBB-CAT demo server.
+
+## A toy hypothesis (cont.) {.smaller}
+
+- We want to know if:
+    - Increased word frequency reduces word duration.
+    - Increased 'previous informativity' increases word duration.
+    - Word finality increases word duration.
+- We will add the available controls.
+    - speech rate (should decrease word duration)
+    - part of speech (various)
+    - repetition in previous 30 seconds (decrease)
+    - Syllable count (increase)
+
+
+## Preregistration on AsPredicted
+
+- Create a new pre-registration [here](https://aspredicted.org/create.php)
+- [Here's one I made earlier](https://aspredicted.org/mvvq-xprt.pdf)
+- During review: create an anonymous pdf of pre-registration.
+- After publication: make pre-registration public.
+
+# Implement
+
+## Implement
+
+- Create a new project from [here](github.com/nzilbb/ws-prereg)
+- Data extraction is in the `extract_data.R` script.
+- Analysis is in the `analysis.R` script.
+- Includes data wrangling, model fit, and following instructions for 
+convergence errors.
+
+# Report
+
+## Table
+
+```{r}
+#| echo: false
+#| label: tbl-coef
+#| tab.cap: |
+#|   Focal predictors in final model.
+mod <- read_rds(here('models', 'prereg_fit.rds'))
+tidy(mod) |>
+  filter(
+    term %in% c("freq_s", "info_s", "finalTRUE")
+  ) |>
+  select(term, estimate, statistic, std.error, p.value) |> 
+  knitr::kable()
+```
+
+
+## Plot
+
+![Marginal predictions from final model for focal predictors.](images/prediction_plot.png){#fig-preds}
+
+## Text {.smaller}
+
+> @tbl-coef presents the coefficients for the model terms associated with the
+three pre-registered hypotheses. All estimates are in the predicted directions
+and are significant at $\alpha = 0.05$.^[The pre-registration incorrectly states Hypothesis 2,
+concerning informativity given previous word, in the opposite direction. 
+The aim of this study was to test the some patterns found in the 'control model' from Sóskuthy and Hay (2017). 
+The pattern in that paper is that increased informativity should come with _increased_ duration.]
+@fig-preds shows marginal predictions of word duration for scaled word frequency (Panel A), 
+scaled informativity given previous word (Panel B) and utterance final and non-utterance final words (panel C).
+As predicted, increased frequency and utterancy finality are associated with decreased word duration
+and increased informativity given previous word with increased word duration.
+
+## Failures
+
+- You can't modify a pre-registration.
+- You can inform readers why you've deviated.
+- The more you deviate, the less impressive your result appears.
+- ...but we can't know everything in advance!
+
+## _Specific_, _Personal_, Failures
+
+- In above, I _reversed_ an hypothesis [...unforgivable]{.fragment}
+- Forgot to indicate how p-values would be generated [...dodgy]{.fragment}
+    - BTW: "Satterthwaite's degrees of freedom method", implemented by 
+    `lmerTest` package.
+- But, otherwise, all went through as planned.
+
+# Summary
+
+## Summary {.smaller}
+
+- Congrats, you've finished the 'Foundations' sessions!
+- We've covered:
+    1. Basic use of R, RStudio, and `git`
+    2. Data transformation in `dplyr`
+    3. Plotting with `ggplot`
+    4. Linear and Linear Mixed Effects Models and modelling workflows.
+    5. Pre-registration and reporting of models
+
+# References
+
+```{r}
+#| echo: false
+grateful::nocite_references(
+  grateful::cite_packages(output = "citekeys", out.dir = here())
+)
+```
+
+
+::: refs
+
+:::

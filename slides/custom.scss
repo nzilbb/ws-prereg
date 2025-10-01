@@ -1,0 +1,79 @@
+/*-- scss:defaults --*/
+
+$presentation-h1-font-size: 2em !default;
+
+$theme-dark: #191818;
+$theme-light: #F5F5F5;
+$theme-blue: #98c0c5;
+$theme-red: #ba5c3d;
+$theme-green: #585C1F;
+
+$body-bg: $theme-light;
+$body-color: $theme-dark;
+$link-color: $theme-green;
+
+$code-block-font-size: 0.7em;
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Noto+Sans&display=swap');
+@import url(https://fonts.bunny.net/css?family=merriweather-sans:700);
+
+$font-family-sans-serif: 'Noto Sans', sans-serif;
+$presentation-heading-font: 'Merriweather Sans', sans-serif;
+
+/*-- scss:rules --*/
+
+.reveal .slide blockquote {
+  border-left: 3px solid $text-muted;
+  padding-left: 0.5em;
+}
+
+.caption{
+   text-align: center;
+}
+
+.reveal .slide-logo {
+  height: 6rem !important;
+  width: 6rem !important;
+  max-width: unset !important;
+  max-height: unset !important;
+}
+
+.centre {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.big {
+  font-size: 1.5em;
+}
+
+.real-big {
+  font-size: 3em;
+}
+
+.blue {
+  color: $theme-blue;
+  font-weight: bold;
+}
+
+.red {
+  color: $theme-red;
+  font-weight: bold;
+}
+
+.green {
+  color: $theme-green;
+  font-weight: bold;
+}
+
+.backlight {
+  text-shadow: -2px 0 $theme-light,2px 0 $theme-light,0 -2px $theme-light,0 2px $theme-light;
+}
+
+.inverse-backlight {
+  color: $theme-light;
+  text-shadow: -2px 0 $theme-dark,2px 0 $theme-dark,0 -2px $theme-dark,0 2px $theme-dark;
+}
