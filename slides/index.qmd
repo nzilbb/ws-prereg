@@ -1,7 +1,7 @@
 ---
 title: "Foundations"
 subtitle: "Session 8: Preregistration and Reporting"
-date: 2025-07-31
+date: today
 # For author options see : 
 # https://quarto.org/docs/authoring/front-matter.html#authors-and-affiliations
 # NB: multiple authors can be added here.
@@ -89,7 +89,7 @@ theme_set(theme_minimal())
 
 ## False positives
 
-- A p-value of 0.05 means we'll wrongly reject the null in roughly 20% of cases.
+- A p-value of 0.05 means we'll wrongly reject the null in roughly 5% of cases.
 - i.e., we accept some [false positives]{.red} ('type I errors').
 - This is a disaster if we can decide our hypothesis _on the basis of the data_.
 - Once there are 20 pairs of variables (around 7 variables), there's probably a 
