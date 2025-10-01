@@ -1,9 +1,19 @@
 library(tidyverse)
 library(here)
+
+# To generate model table.
 library(broom.mixed)
-library(modelbased)
+
+# To generate prediction plots
+library(ggeffects)
+
+# To fit mixed effectsmodels
 library(lme4)
+
+# To add p-values to model summaries
 library(lmerTest)
+
+# To combine ggplot plots together.
 library(patchwork)
 
 theme_set(theme_bw())
@@ -122,12 +132,8 @@ qb_words_filtered <- qb_words |>
   filter(
     !str_detect(orthography, "~"),
     str_detect(pos, "(^JJ)|(^NN)|(^RB)|(^V)"),
-    !str_detect(orthography, "'s"),
-    between(
-      word_duration,
-      mean(word_duration) - 2.5 * sd(word_duration),
-      mean(word_duration) + 2.5 * sd(word_duration)
-    )
+    !str_detect(orthography, "'s$"),
+    word_duration < mean(word_duration) + 2.5 * sd(word_duration)
   )
 
 # 23737 -> 10850

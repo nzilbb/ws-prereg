@@ -206,7 +206,7 @@ For advice on AsPredicted pre-registrations go [here](https://datacolada.org/64)
 - We want to know if:
     - Increased word frequency reduces word duration.
     - Increased 'previous informativity' increases word duration.
-    - Word finality increases word duration.
+    - Utterance finality increases word duration.
 - We will add the available controls.
     - speech rate (should decrease word duration)
     - part of speech (various)
